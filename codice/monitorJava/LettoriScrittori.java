@@ -20,12 +20,5 @@ public class LettoriScrittori {
             lettore.start();
         }
         
-        // Scrittore scrittore = new Scrittore(monitor, memoriaCondivisa);
-        // Lettore lettore = new Lettore(monitor, memoriaCondivisa);
-        // Lettore lettore2 = new Lettore(monitor, memoriaCondivisa);
-
-        // scrittore.start();
-        // lettore.start();
-        // lettore2.start();
     }
 }
