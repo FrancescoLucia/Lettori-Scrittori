@@ -1,21 +1,26 @@
 #include <pthread.h>
 #include <semaphore.h>
+#include <time.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 
-#define NUMERO_LETTORI 10
-#define NUMERO_SCRITTORI 5
+#define NUMERO_LETTORI 12
+#define NUMERO_SCRITTORI 7
 
 sem_t semaforo_scrittura;
 pthread_mutex_t mutex; // per la sezione critica relativa all'aggiornamento della variabile numero_lettori
-int variabile_condivisa = 0;
+int variabile_condivisa = 1;
 int numero_lettori = 0; // lettori contemporaneamente attivi
 
 void *scrittore(void* id_thread) {
+    sleep(0.9); // sleep per ritardare l'esecuzione degli scrittori (a scopo di testing)
     unsigned long tid = (unsigned long) id_thread;
     sem_wait(&semaforo_scrittura); // attende la possibilità di scrivere
-    variabile_condivisa += 10;
-    printf("Scrittore %lu ha incrementato la variabile di 10\n", tid);
+    variabile_condivisa *= rand()%10+1;
+    printf("Scrittore %lu ha moltiplicato la variabile per un numero casuale\n", tid);
     sem_post(&semaforo_scrittura); // rilascia il semaforo 
+    
 }
 
 void *lettore(void* id_thread) {
@@ -40,6 +45,8 @@ void *lettore(void* id_thread) {
 }
 
 int main() {
+    srand(time(NULL));
+
     pthread_t lettori[NUMERO_LETTORI], scrittori[NUMERO_SCRITTORI]; // crea i threads
     // inizializza il semaforo e il mutex
     pthread_mutex_init(&mutex, NULL);
