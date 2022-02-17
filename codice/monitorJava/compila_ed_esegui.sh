@@ -1,0 +1,2 @@
+javac LettoriScrittori.java
+java LettoriScrittori
