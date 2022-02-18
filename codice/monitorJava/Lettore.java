@@ -12,7 +12,7 @@ public class Lettore extends Thread {
     @Override
     public void run() {
         try {
-            Thread.sleep((long) (Math.random()*3001));
+            Thread.sleep((long) (Math.random()*3001)); // attesa casuale per i test
             monitor.iniziaLettura();
             System.out.println("Lettore " + getName() + " - valore -> " + memoria.leggi());
             monitor.terminaLettura();

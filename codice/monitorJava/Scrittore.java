@@ -11,7 +11,7 @@ public class Scrittore extends Thread{
     @Override
     public void run() {
         try {
-            Thread.sleep((long) (Math.random()*3001));
+            Thread.sleep((long) (Math.random()*3001)); // attesa casuale per i test
             monitor.iniziaScrittura();
             System.out.println("Scrittore " + getName() + " moltiplica per 2 ");
             memoria.scrivi(2);
