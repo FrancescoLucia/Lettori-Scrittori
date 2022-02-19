@@ -15,13 +15,12 @@ int numero_lettori = 0; // lettori contemporaneamente attivi
 
 float randomFloat( float min, float max )
 {
-    float scale = rand() / (float) RAND_MAX; /* [0, 1.0] */
-    return min + scale * ( max - min );      /* [min, max] */
+    float scale = rand() / (float) RAND_MAX;
+    return min + scale * ( max - min );
 }
 
 void *scrittore(void* id_thread) {
-    sleep(randomFloat(0, 3));
-    //sleep(0.9); // sleep per ritardare l'esecuzione degli scrittori (a scopo di testing)
+    sleep(randomFloat(0, 3)); // sleep per ritardare l'esecuzione a scopo di test
     unsigned long tid = (unsigned long) id_thread;
     sem_wait(&semaforo_scrittura); // attende la possibilità di scrivere
     variabile_condivisa *= rand()%10+1;
@@ -31,7 +30,7 @@ void *scrittore(void* id_thread) {
 }
 
 void *lettore(void* id_thread) {
-    sleep(randomFloat(0, 3));
+    sleep(randomFloat(0, 3)); // sleep per ritardare l'esecuzione a scopo di test
     unsigned long tid = (unsigned long)id_thread;
     pthread_mutex_lock(&mutex); // entra nella sezione critica
     numero_lettori++;
