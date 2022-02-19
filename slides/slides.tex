@@ -1,5 +1,5 @@
 
-\documentclass{beamer}[10pt]
+\documentclass[10pt]{beamer}
 \usepackage{verbatim}
 \mode<presentation> {
 	
@@ -102,7 +102,11 @@
 		\item Se uno scrittore sta scrivendo, nessun processo può leggere.
 		\item Solo uno scrittore per volta può scrivere.
 	\end{itemize}
+
+	La soluzione si serve di strutture per regolare l'accesso alla risorsa imponendo che siano rispettate le 3 considerazioni appena fatte.
 \end{frame}
+
+%--- SOLUZIONE IN C ---%
 
 \begin{frame}[fragile]
 	\frametitle{Creazione di lettori e scrittori}
@@ -137,21 +141,132 @@
 	\frametitle{Soluzione con semafori e lock mutex}
 	La soluzione privilegia i lettori.
 	La variabile \emph{num\_lettori} conta i lettori attualmente attivi. La sincronizzazione è gestita attraverso l'utilizzo in un lock mutex (\emph{mutex}) per la sezione critica relativa all'aggiornamento della variabile contatore dei lettori, e un semaforo (\emph{semaforo\_scrittura}) per regolare l'autorizzazione a scrivere per gli scrittori.
+	
+	Il problema della soluzione è la possibilità di starvation per gli scrittori, se infatti ci sono uno o più lettori attivi e continuano ad arrivarne altri, il programma darà precedenza a questi autorizzando lo scrittore a scrivere solo nel momento in cui tutti i lettori avranno terminato.
+	
+	Per ovviare al problema si potrebbero implementare dei sistemi che mettano un limite al tempo che uno scrittore può attendere, andando a sospendere le operazioni di lettura per consentire di smaltire la coda degli scrittori.
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Soluzione con semafori e lock mutex}
+	\begin{columns}
+		\begin{column}{0.4\textwidth}
+			Lock Mutex
+			
+			Variabile booleana, un processo acquisisce il lock e il successivo che tenta di acquisirlo rimane in attesa finché il primo non lo rilascia.
+			
+			\begin{verbatim}
+				acquire() {
+					while (!available) ;
+					available = false;
+				}
+				release() {
+					available = true;
+				}
+			
+		\end{verbatim}
+		\end{column}
+		\begin{column}{0.4\textwidth}
+			Semaforo
+			
+			Variabile intera o booleana, un processo acquisisce il semaforo e i successivi in attesa vengono inseriti in una coda dei processi
+			
+			\begin{verbatim}
+				wait(semaphore *S) {
+					S->value--;
+					if (S->value < 0) {
+						aggiungi il processo a S->list;
+						sleep();
+					}
+				}
+				signal(semaphore *S) {
+					S->value++;
+					if (S->value <= 0) {
+						togli un processo P da S->list;
+						wakeup(P);
+					}	
+				}
+			\end{verbatim}
+		\end{column}
+	\end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+	\frametitle{Soluzione con semafori e lock mutex}
+		Il lock mutex utilizza il tipo \emph{pthread\_mutex} di pthread. Un thread può acquisire il lock su un lock mutex prima di entrare in una sezione critica e successivamente rilasciarlo con le procedure pthread\_mutex\_lock(\&mutex) e pthread\_mutex\_unlock(\&mutex).
+		
+		I semafori sono implementati nella libreria \emph{semaphore.h}, un semaforo di tipo \emph{sem\_t} può essere inizializzato con la procedura \emph{sem\_init(\&semaforo,0, 1)}, dove 0 indica che il semaforo è condiviso solo nei threads del processo che l'ha generato, il terzo parametro (1) è il valore iniziale del semaforo.
+		
+		Le istruzioni per acquisire e rilasciare il semaforo sono rispettivamente \emph{sem\_wait(\&semaforo)} e \emph{sem\_post(\&semaforo)}
 \end{frame}
 	
-	\begin{frame}
-		\frametitle{Colonne}
+	\begin{frame}[fragile]
+		\frametitle{Il codice}
 		\begin{columns}
-			\begin{column}{0.4\textwidth}
-			
-			\end{column}
-			\begin{column}{0.4\textwidth}
+			\begin{column}{0.3\textwidth}
 				
+				\begin{figure}
+					\centering
+					\includegraphics[width=2\linewidth]{img/main}
+				\end{figure}
+				
+			\end{column}\hspace{100pt}
+			\begin{column}{0.3\textwidth}
+				Metodo main
+				
+				Dopo l'inizializzazione del semaforo e del mutex, due cicli for creano i threads per gli scrittori e i lettori, poi con \emph{pthread\_join} attenda che questi terminino.
+				
+				Successivamente è importante deallocare le risorse (terzultima e penultima riga), dimenticarsene potrebbe causare perdita di memoria in alcune situazioni.
 			\end{column}
 		\end{columns}
 	\end{frame}
 
-	%---Esecuzione C---%
+\begin{frame}[fragile]
+	\frametitle{Il codice}
+			
+			\centering
+			\includegraphics[width=\linewidth]{img/scrittore}
+			Lo scrittore chiama una \emph{sem\_wait} sul semaforo, una volta acquisito modifica la variabile e stampa la scritta di logging, poi chiama una \emph{sem\_post} per liberare il semaforo e permette ad altri scrittori/lettori di agire.
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Il codice}
+		\begin{columns}
+		\begin{column}{0.3\textwidth}
+			
+			\begin{figure}
+				\centering
+				\includegraphics[width=2\linewidth]{img/lettore}
+			\end{figure}
+			
+		\end{column}\hspace{100pt}
+		\begin{column}{0.3\textwidth}
+			Il lettore acquisisce il lock sul mutex, incrementa la variabile che conta il numero di lettori attualmente attivi, se è il primo lettore (if) acquisisce il semaforo\_scrittura (assicurandosi così che non ci siano processi che stanno scrivendo), rilascia poi il lock sul mutex in modo da permettere ad altri lettori di leggere contemporaneamente e legge il valore.
+		\end{column}
+	\end{columns}
+	
+\end{frame}
+\begin{frame}[fragile]
+	\frametitle{Il codice}
+	\begin{columns}
+		\begin{column}{0.3\textwidth}
+			
+			\begin{figure}
+				\centering
+				\includegraphics[width=2\linewidth]{img/lettore}
+			\end{figure}
+			
+		\end{column}\hspace{100pt}
+		\begin{column}{0.3\textwidth}
+		Dopo la lettura riacquisisce il lock sul mutex per decrementare la variabile numero\_lettori, se non ci sono più processi che stanno leggendo rilascia il semaforo\_scrittura per permettere ad uno scrittore di iniziare.
+		
+		Successivamente rilascia il lock sul mutex
+		\end{column}
+	\end{columns}
+	
+\end{frame}
+	%--- Esecuzione C ---%
 	\begin{frame}[fragile]
 		\frametitle{Prima esecuzione}
 		\begin{figure}
@@ -168,6 +283,13 @@
 			\label{fig:programc1}
 		\end{figure}
 	\end{frame}
+
+%--- SOLUZIONE IN JAVA ---%
+
+\begin{frame}
+	\frametitle{Monitor}
+	
+\end{frame}
 
  %---Esecuzione Java----%
 	\begin{frame}[fragile]
