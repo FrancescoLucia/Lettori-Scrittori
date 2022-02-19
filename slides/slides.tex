@@ -93,7 +93,7 @@
 \begin{frame}
 	\frametitle{Analisi del problema}
 	
-	Infatti se i processi lettori leggessero contemporaneamente a un processo scrittore, potrebbero leggere solo una parte del contenuto o non riuscire ad accedervi affatto. Se due scrittori scrivessero contemporaneamente potrebbero sovrascrivere uno il lavoro dell'altro o generare dati corrotti.\\Mentre se due lettori dovessero leggere contemporaneamente non si verificherebbe alcun problema.
+	Infatti se i processi lettori leggessero contemporaneamente ad un processo scrittore, potrebbero leggere solo una parte del contenuto o non riuscire ad accedervi affatto. Se due scrittori scrivessero contemporaneamente potrebbero sovrascrivere uno il lavoro dell'altro o generare dati corrotti.\\Mentre se due lettori dovessero leggere contemporaneamente non si verificherebbe alcun problema.
 	
 	Analizzando il problema si possono quindi riassumere una serie di considerazioni:
 	
@@ -288,7 +288,35 @@
 
 \begin{frame}
 	\frametitle{Monitor}
+	L'uso dei semafori in alcune situazioni è macchinoso e necessita di uno sforzo particolare da parte dello sviluppatore. Un errore logico può causare bug che si manifestano solo in condizioni particolari e pertanto difficili da individuare.
 	
+	Un monitor è un tipo di dato che incapsula la logica di gestione della sincronizzazione, esponendo delle funzioni utilizzabili dagli sviluppatori nei programmi che slegano la singola operazione dalla logica di sincronizzazione.
+	
+	Il secondo esempio di implementazione è una soluzione in linguaggio Java che utilizza una classe Monitor per mostrare come questa semplifichi poi la gestione dei lettori e scrittori (e di conseguenza il codice).
+\end{frame}
+
+\begin{frame}
+	\frametitle{Soluzione con Monitor}
+	La classe \emph{Memoria} non fa altro che mantenere lo stato della memoria condivisa tra i threads, espone i metodi scrivi e leggi.
+	
+	La classe \emph{LettoriScrittori} contiene il main del programma, si occupa di creare gli oggetti monitor e memoria e di avviare i threads (la struttura del programma è simile a quella vista per la prima soluzione con le dovute differenze sintattiche e nelle librerie utilizzate per l'avvio dei threads).
+	
+	Le classi \emph{Lettore} e \emph{Scrittore} estendono la classe astratta \emph{Thread} (metodo standard per la creazione di thread in java), nel metodo \emph{run()} svolgono le operazioni di lettura/scrittura, con la semplice accortezza di chiamare i rispettivi metodi della classe monitor \emph{iniziaLettura()}/\emph{terminaLettura()} e \emph{iniziaScrittura()}/\emph{terminaScrittura()}.
+\end{frame}
+
+\begin{frame}
+	\frametitle{Classe Lettore}
+		\begin{figure}
+			\centering
+			\includegraphics[width=\linewidth]{img/lettore_java}
+		\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{Classe Scrittore}
+	\begin{figure}
+		\centering
+		\includegraphics[width=\linewidth]{img/scrittore_java}
+	\end{figure}
 \end{frame}
 
  %---Esecuzione Java----%
