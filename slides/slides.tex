@@ -301,7 +301,7 @@
 	
 	La classe \emph{LettoriScrittori} contiene il main del programma, si occupa di creare gli oggetti monitor e memoria e di avviare i threads (la struttura del programma è simile a quella vista per la prima soluzione con le dovute differenze sintattiche e nelle librerie utilizzate per l'avvio dei threads).
 	
-	Le classi \emph{Lettore} e \emph{Scrittore} estendono la classe astratta \emph{Thread} (metodo standard per la creazione di thread in java), nel metodo \emph{run()} svolgono le operazioni di lettura/scrittura, con la semplice accortezza di chiamare i rispettivi metodi della classe monitor \emph{iniziaLettura()}/\emph{terminaLettura()} e \emph{iniziaScrittura()}/\emph{terminaScrittura()}.
+	Le classi \emph{Lettore} e \emph{Scrittore} estendono la classe astratta \emph{Thread} (metodo standard per la creazione di thread in java), nel metodo \emph{run()} svolgono le operazioni di lettura/scrittura, con la semplice accortezza di chiamare (prima e dopo l'accesso alla risorsa) i rispettivi metodi della classe monitor \emph{iniziaLettura()}/\emph{terminaLettura()} e \emph{iniziaScrittura()}/\emph{terminaScrittura()}.
 \end{frame}
 
 \begin{frame}
@@ -317,6 +317,21 @@
 		\centering
 		\includegraphics[width=\linewidth]{img/scrittore_java}
 	\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Sincronizzazione in Java}
+	Il locking è gestibile in Java con i lock rientranti (\emph{ReentrantLock}) che svolge nel Monitor funzioni analoghe al lock mutex nell'implementazione in C. I metodi per acquisire e rilasciare il lock sono rispettivamente \emph{lock()} e \emph{unlock()}.
+	
+	Le variabili condizionali sono associate a un lock, il metodo \emph{newCondition()} chiamato sul riferimento ad un oggetto \emph{ReentrantLock} crea un nuovo oggetto di tipo \emph{Condition}, che espone i metodi \emph{wait()} e \emph{signal()}.
+	
+	All'interno della classe Monitor troviamo diversi contatori che mantengono informazioni lo stato degli accessi alle risorse: \emph{numeroLettori}, \emph{numeroScrittori}, \emph{lettoriInAttesa}, \emph{scrittoriInAttesa}.
+	
+	La classe Monitor utilizza un \emph{ReentrantLock} per gestire le sezioni critiche per l'aggiornamento dei contatori e due variabili condition \emph{condScrittura} e \emph{condLettura}.
+\end{frame}
+\begin{frame}
+	\frametitle{La classe Monitor}
+	
 \end{frame}
 
  %---Esecuzione Java----%

@@ -32,8 +32,11 @@ public class Monitor {
     public void terminaScrittura() {
         lock.lock();
         numeroScrittori = 0;
-
-        if (lettoriInAttesa > 0) { // Se ci sono lettori in attesa gli consento la lettura, altrimenti consento la scrittura al prossimo lettore
+        /*
+         * Se ci sono lettori in attesa gli consento la lettura
+         * altrimenti consento la scrittura al prossimo lettore
+         */
+        if (lettoriInAttesa > 0) {
             condLettura.signal();
         } else {
             condScrittura.signal();
@@ -45,7 +48,8 @@ public class Monitor {
     public void iniziaLettura() throws InterruptedException {
         lock.lock();
 
-        if (numeroScrittori == 1 || scrittoriInAttesa > 1) { // se un thread sta scrivendo o ci sono uno o più scrittori in attesa
+        // se un thread sta scrivendo o ci sono uno o più scrittori in attesa
+        if (numeroScrittori == 1 || scrittoriInAttesa > 1) {
             ++lettoriInAttesa;
             condLettura.await(); // attendo il permesso per leggere
             --lettoriInAttesa;
